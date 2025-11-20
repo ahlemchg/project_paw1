@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <title>Rapports de Présence</title>
+    <link rel="stylesheet" href="style.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+    <div class="navbar">
+        <a href="index.html">Accueil</a>
+        <a href="attendance.html">Liste de Présence</a>
+        <a href="add_student.html">Ajouter Étudiant</a>
+        <a href="reports.html" class="active">Rapports</a>
+    </div>
+    <div class="container">
+        <div class="card">
+            <h2>Rapports de Présence</h2>
+            <p>Total des étudiants : <span id="totalStudents"></span></p>
+            <p>Présence parfaite : <span id="perfectAttendance"></span></p>
+            <p>Total des participations : <span id="totalParticipation"></span></p>
+            <canvas id="attendanceChart"></canvas>
+        </div>
+    </div>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="script.js"></script>
+</body>
+</html>

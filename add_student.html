@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <title>Ajouter un Étudiant</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="navbar">
+        <a href="index.html">Accueil</a>
+        <a href="attendance.html">Liste de Présence</a>
+        <a href="add_student.html" class="active">Ajouter Étudiant</a>
+        <a href="reports.html">Rapports</a>
+    </div>
+    <div class="container">
+        <div class="card">
+            <h2>Ajouter un nouvel étudiant</h2>
+            <form id="addStudentForm">
+                <input type="text" id="student_id" placeholder="ID de l'étudiant" required>
+                <span class="error" id="student_id_error"></span>
+                <input type="text" id="last_name" placeholder="Nom" required>
+                <span class="error" id="last_name_error"></span>
+                <input type="text" id="first_name" placeholder="Prénom" required>
+                <span class="error" id="first_name_error"></span>
+                <input type="email" id="email" placeholder="Email" required>
+                <span class="error" id="email_error"></span>
+                <input type="submit" value="Ajouter l'étudiant">
+                <p id="confirmationMessage" style="color: green; display: none;">Étudiant ajouté avec succès !</p>
+            </form>
+        </div>
+    </div>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="script.js"></script>
+</body>
+</html>

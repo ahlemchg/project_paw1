@@ -1,0 +1,26 @@
+[
+    {
+        "id": "001",
+        "lastName": "Ahmed",
+        "firstName": "Sara",
+        "email": "sara@example.com",
+        "attendance": [true, false, true, true, true, false],
+        "participation": [false, true, false, false, false, false]
+    },
+    {
+        "id": "002",
+        "lastName": "Yacine",
+        "firstName": "Ali",
+        "email": "ali@example.com",
+        "attendance": [true, true, true, true, true, true],
+        "participation": [false, false, true, true, true, true]
+    },
+    {
+        "id": "003",
+        "lastName": "Houcine",
+        "firstName": "Rania",
+        "email": "rania@example.com",
+        "attendance": [true, false, true, false, true, false],
+        "participation": [true, false, true, false, false, false]
+    }
+]
