@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Reports</title>
+    <style>
+        :root {
+            --bg: #f8fafc;
+            --surface: #ffffff;
+            --text: #0f172a;
+            --muted: #64748b;
+            --border: #e2e8f0;
+            --primary: #2563eb;
+            --primary-hover: #1d4ed8;
+        }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, "Noto Sans", "Apple Color Emoji", "Segoe UI Emoji";
+            margin: 0;
+            color: var(--text);
+            background: var(--bg);
+        }
+        nav {
+            background-color: var(--surface);
+            border-bottom: 1px solid var(--border);
+            box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+            position: sticky;
+            top: 0;
+            z-index: 10;
+        }
+        nav ul {
+            list-style-type: none;
+            margin: 0;
+            padding: 0 12px;
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+        nav ul li { float: none; }
+        nav ul li a {
+            display: block;
+            color: var(--text);
+            text-align: left;
+            padding: 12px 16px;
+            text-decoration: none;
+            border-radius: 8px;
+        }
+        nav ul li a:hover {
+            background-color: #f1f5f9;
+            color: var(--primary);
+        }
+        .container { max-width: 1000px; margin: 24px auto; padding: 24px; background: var(--surface); border-radius: 12px; box-shadow: 0 6px 24px rgba(15,23,42,0.06); }
+        #stats p { margin: 6px 0; color: var(--muted); }
+        #chart { width: 100%; max-width: 640px; height: auto; border: 1px solid var(--border); border-radius: 8px; background: #fff; }
+        @media (min-width: 600px) {
+            nav ul { flex-direction: row; gap: 8px; }
+            nav ul li a { text-align: center; padding: 14px 16px; }
+        }
+    </style>
+</head>
+<body>
+    <nav>
+        <ul>
+            <li><a href="home.html">Home</a></li>
+            <li><a href="attendance.html">Attendance List</a></li>
+            <li><a href="add.html">Add Student</a></li>
+            <li><a href="reports.html">Reports</a></li>
+            <li><a href="#">Logout</a></li>
+        </ul>
+    </nav>
+    <div class="container">
+        <h1>Report Summary</h1>
+        <div id="stats">
+            <p>Total students: <span id="totalStudents">0</span></p>
+            <p>Present marks: <span id="presentCount">0</span></p>
+            <p>Participation marks: <span id="participationCount">0</span></p>
+        </div>
+        <canvas id="chart" width="480" height="260"></canvas>
+    </div>
+    <script>
+        function renderChart(summary) {
+            const canvas = document.getElementById('chart');
+            const ctx = canvas.getContext('2d');
+            const labels = ['Students', 'Present', 'Participations'];
+            const values = [summary.totalStudents, summary.present, summary.participated];
+            const colors = ['#4caf50', '#2196f3', '#ff9800'];
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            const paddingX = 40, paddingY = 40;
+            const max = Math.max(...values, 1);
+            const gap = 30;
+            const barAreaWidth = canvas.width - paddingX * 2;
+            const barWidth = Math.floor((barAreaWidth - gap * (values.length - 1)) / values.length);
+            const baseY = canvas.height - paddingY;
+            ctx.font = '14px sans-serif';
+            ctx.textAlign = 'center';
+            values.forEach((v, i) => {
+                const x = paddingX + i * (barWidth + gap);
+                const h = Math.floor((canvas.height - paddingY * 2) * (v / max));
+                const y = baseY - h;
+                ctx.fillStyle = colors[i];
+                ctx.fillRect(x, y, barWidth, h);
+                ctx.fillStyle = '#000';
+                ctx.fillText(labels[i], x + barWidth / 2, baseY + 18);
+                ctx.fillText(String(v), x + barWidth / 2, y - 6);
+            });
+        }
+        function setStats(summary) {
+            document.getElementById('totalStudents').textContent = summary.totalStudents;
+            document.getElementById('presentCount').textContent = summary.present;
+            document.getElementById('participationCount').textContent = summary.participated;
+        }
+        let summary = null;
+        try { summary = JSON.parse(localStorage.getItem('report_summary')); } catch {}
+        if (!summary) {
+            const students = JSON.parse(localStorage.getItem('students') || '[]');
+            let present = 0, participated = 0;
+            students.forEach(s => {
+                (s.sessions || []).forEach(sess => {
+                    if (sess.p) present++;
+                    if (sess.pa) participated++;
+                });
+            });
+            summary = { totalStudents: students.length, present, participated };
+        }
+        setStats(summary);
+        renderChart(summary);
+    </script>
+</body>
+</html>

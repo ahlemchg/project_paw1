@@ -1,0 +1,368 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Home - Attendance Management System</title>
+    <style>
+        :root {
+            --bg: #f8fafc;
+            --surface: #ffffff;
+            --text: #0f172a;
+            --muted: #64748b;
+            --border: #e2e8f0;
+            --primary: #2563eb;
+            --primary-hover: #1d4ed8;
+            --success: #10b981;
+            --warning: #f59e0b;
+            --danger: #ef4444;
+        }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, "Noto Sans", "Apple Color Emoji", "Segoe UI Emoji";
+            margin: 0;
+            color: var(--text);
+            background: var(--bg);
+        }
+        nav {
+            background-color: var(--surface);
+            border-bottom: 1px solid var(--border);
+            box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+            position: sticky;
+            top: 0;
+            z-index: 10;
+        }
+        nav ul {
+            list-style-type: none;
+            margin: 0;
+            padding: 0 12px;
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+        nav ul li { float: none; }
+        nav ul li a {
+            display: block;
+            color: var(--text);
+            text-align: left;
+            padding: 12px 16px;
+            text-decoration: none;
+            border-radius: 8px;
+        }
+        nav ul li a:hover {
+            background-color: #f1f5f9;
+            color: var(--primary);
+        }
+        @media (min-width: 600px) {
+            nav ul { flex-direction: row; gap: 8px; }
+            nav ul li a { text-align: center; padding: 14px 16px; }
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 32px 24px;
+        }
+        .welcome-section {
+            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-hover) 100%);
+            color: white;
+            padding: 48px 32px;
+            border-radius: 16px;
+            margin-bottom: 32px;
+            box-shadow: 0 8px 24px rgba(37,99,235,0.25);
+        }
+        .welcome-section h1 {
+            margin: 0 0 12px;
+            font-size: 32px;
+            font-weight: 700;
+        }
+        .welcome-section p {
+            margin: 0;
+            font-size: 18px;
+            opacity: 0.95;
+        }
+        .stats-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 16px;
+            margin-bottom: 32px;
+        }
+        @media (min-width: 600px) {
+            .stats-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+        @media (min-width: 900px) {
+            .stats-grid {
+                grid-template-columns: repeat(4, 1fr);
+            }
+        }
+        .stat-card {
+            background: var(--surface);
+            padding: 24px;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+            border: 1px solid var(--border);
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+        .stat-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+        }
+        .stat-card .label {
+            font-size: 14px;
+            color: var(--muted);
+            margin-bottom: 8px;
+            font-weight: 500;
+        }
+        .stat-card .value {
+            font-size: 32px;
+            font-weight: 700;
+            color: var(--text);
+        }
+        .stat-card .value.success { color: var(--success); }
+        .stat-card .value.warning { color: var(--warning); }
+        .stat-card .value.danger { color: var(--danger); }
+        .cards-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 20px;
+            margin-bottom: 32px;
+        }
+        @media (min-width: 600px) {
+            .cards-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+        @media (min-width: 900px) {
+            .cards-grid {
+                grid-template-columns: repeat(3, 1fr);
+            }
+        }
+        .card {
+            background: var(--surface);
+            padding: 32px;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+            border: 1px solid var(--border);
+            text-decoration: none;
+            color: var(--text);
+            display: block;
+            transition: all 0.2s ease;
+            position: relative;
+            overflow: hidden;
+        }
+        .card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 4px;
+            height: 100%;
+            background: var(--primary);
+            transform: scaleY(0);
+            transition: transform 0.2s ease;
+        }
+        .card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 8px 24px rgba(0,0,0,0.12);
+            border-color: var(--primary);
+        }
+        .card:hover::before {
+            transform: scaleY(1);
+        }
+        .card-icon {
+            font-size: 48px;
+            margin-bottom: 16px;
+            display: block;
+        }
+        .card h2 {
+            margin: 0 0 8px;
+            font-size: 20px;
+            font-weight: 600;
+        }
+        .card p {
+            margin: 0;
+            color: var(--muted);
+            font-size: 14px;
+            line-height: 1.5;
+        }
+        .section-title {
+            font-size: 24px;
+            font-weight: 600;
+            margin: 0 0 20px;
+            color: var(--text);
+        }
+        .quick-actions {
+            background: var(--surface);
+            padding: 24px;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+            border: 1px solid var(--border);
+        }
+        .quick-actions h3 {
+            margin: 0 0 16px;
+            font-size: 18px;
+            font-weight: 600;
+        }
+        .action-buttons {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px;
+        }
+        .btn {
+            display: inline-block;
+            padding: 10px 20px;
+            background: var(--primary);
+            color: white;
+            text-decoration: none;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 500;
+            transition: background-color 0.2s ease, transform 0.08s ease;
+            border: none;
+            cursor: pointer;
+        }
+        .btn:hover {
+            background: var(--primary-hover);
+            transform: translateY(-1px);
+        }
+        .btn-secondary {
+            background: var(--muted);
+        }
+        .btn-secondary:hover {
+            background: #475569;
+        }
+    </style>
+</head>
+<body>
+    <nav>
+        <ul>
+            <li><a href="home.html">Home</a></li>
+            <li><a href="attendance.html">Attendance List</a></li>
+            <li><a href="add.html">Add Student</a></li>
+            <li><a href="reports.html">Reports</a></li>
+            <li><a href="#">Logout</a></li>
+        </ul>
+    </nav>
+
+    <div class="container">
+        <div class="welcome-section">
+            <h1>Welcome to Attendance Management System</h1>
+            <p>Manage student attendance, track participation, and generate reports efficiently.</p>
+        </div>
+
+        <div class="stats-grid" id="statsGrid">
+            <div class="stat-card">
+                <div class="label">Total Students</div>
+                <div class="value" id="totalStudents">-</div>
+            </div>
+            <div class="stat-card">
+                <div class="label">Today's Attendance</div>
+                <div class="value" id="todayAttendance">-</div>
+            </div>
+            <div class="stat-card">
+                <div class="value success" id="presentCount">-</div>
+                <div class="label">Present Today</div>
+            </div>
+            <div class="stat-card">
+                <div class="value danger" id="absentCount">-</div>
+                <div class="label">Absent Today</div>
+            </div>
+        </div>
+
+        <h2 class="section-title">Quick Access</h2>
+        <div class="cards-grid">
+            <a href="attendance.html" class="card">
+                <span class="card-icon">📋</span>
+                <h2>Attendance List</h2>
+                <p>View and manage student attendance records for all sessions. Track presence and participation.</p>
+            </a>
+            <a href="add.html" class="card">
+                <span class="card-icon">➕</span>
+                <h2>Add Student</h2>
+                <p>Register new students to the system. Add their information and assign them to groups.</p>
+            </a>
+            <a href="add_student.php" class="card">
+                <span class="card-icon">💾</span>
+                <h2>Add Student (Database)</h2>
+                <p>Add students directly to the database with fullname, matricule, and group information.</p>
+            </a>
+            <a href="list_students.php" class="card">
+                <span class="card-icon">👥</span>
+                <h2>List Students</h2>
+                <p>View all registered students, edit their information, or remove them from the system.</p>
+            </a>
+            <a href="reports.html" class="card">
+                <span class="card-icon">📊</span>
+                <h2>Reports</h2>
+                <p>Generate attendance reports and view statistics with visual charts and summaries.</p>
+            </a>
+            <a href="take_attendance.php" class="card">
+                <span class="card-icon">✅</span>
+                <h2>Take Attendance</h2>
+                <p>Mark attendance for today's session. Record present and absent students quickly.</p>
+            </a>
+        </div>
+
+        <div class="quick-actions">
+            <h3>Quick Actions</h3>
+            <div class="action-buttons">
+                <a href="add_student.php" class="btn">Add New Student</a>
+                <a href="create_session.php" class="btn">Create Session</a>
+                <a href="attendance.html" class="btn">View Attendance</a>
+                <a href="reports.html" class="btn btn-secondary">View Reports</a>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Load statistics from localStorage
+        function loadStats() {
+            try {
+                const students = JSON.parse(localStorage.getItem('students') || '[]');
+                const today = new Date().toISOString().split('T')[0];
+                const attendanceFile = `attendance_${today}.json`;
+                
+                // Total students
+                document.getElementById('totalStudents').textContent = students.length || 0;
+                
+                // Try to load today's attendance
+                let todayAttendance = null;
+                try {
+                    const attendanceData = localStorage.getItem(`attendance_${today}`);
+                    if (attendanceData) {
+                        todayAttendance = JSON.parse(attendanceData);
+                    }
+                } catch (e) {
+                    // File might not exist, that's okay
+                }
+                
+                if (todayAttendance && Array.isArray(todayAttendance)) {
+                    const present = todayAttendance.filter(a => a.status === 'present').length;
+                    const absent = todayAttendance.filter(a => a.status === 'absent').length;
+                    const total = todayAttendance.length;
+                    
+                    document.getElementById('todayAttendance').textContent = total;
+                    document.getElementById('presentCount').textContent = present;
+                    document.getElementById('absentCount').textContent = absent;
+                } else {
+                    document.getElementById('todayAttendance').textContent = '-';
+                    document.getElementById('presentCount').textContent = '-';
+                    document.getElementById('absentCount').textContent = '-';
+                }
+            } catch (e) {
+                console.error('Error loading stats:', e);
+            }
+        }
+        
+        // Load stats on page load
+        loadStats();
+        
+        // Update stats when localStorage changes (if another tab modifies data)
+        window.addEventListener('storage', function(e) {
+            if (e.key === 'students' || e.key.startsWith('attendance_')) {
+                loadStats();
+            }
+        });
+    </script>
+</body>
+</html>
