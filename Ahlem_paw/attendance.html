@@ -1,0 +1,474 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Attendance</title>
+    <style>
+        :root {
+            --bg: #f8fafc;
+            --surface: #ffffff;
+            --text: #0f172a;
+            --muted: #64748b;
+            --primary: #2563eb;
+            --primary-hover: #1d4ed8;
+            --success: #10b981;
+            --warning: #f59e0b;
+            --danger: #ef4444;
+            --border: #e2e8f0;
+        }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, "Noto Sans", "Apple Color Emoji", "Segoe UI Emoji";
+            margin: 0;
+            color: var(--text);
+            background: var(--bg);
+        }
+        nav {
+            background-color: var(--surface);
+            border-bottom: 1px solid var(--border);
+            box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+            position: sticky;
+            top: 0;
+            z-index: 10;
+        }
+        nav ul {
+            list-style-type: none;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+        }
+        nav ul li {
+            float: none;
+        }
+        nav ul li a {
+            display: block;
+            color: var(--text);
+            text-align: left;
+            padding: 12px 16px;
+            text-decoration: none;
+            border-radius: 8px;
+        }
+        nav ul li a:hover {
+            background-color: #f1f5f9;
+            color: var(--primary);
+        }
+        .container {
+            max-width: 10000px;
+            margin: 24px auto;
+            padding: 24px;
+            background: var(--surface);
+            border-radius: 12px;
+            box-shadow: 0 6px 24px rgba(15,23,42,0.06);
+        }
+        .table-responsive {
+            width: 100%;
+            overflow-x: auto;
+            -webkit-overflow-scrolling: touch;
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            background: var(--surface);
+            box-shadow: inset 0 1px 0 rgba(226,232,240,0.6);
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        th, td {
+            border: 1px solid var(--border);
+            padding: 10px 12px;
+            text-align: left;
+            vertical-align: middle;
+        }
+        tbody td input[type="checkbox"] { width: 18px; height: 18px; accent-color: var(--primary); display: block; margin: 0 auto; }
+        tbody td:first-child, tbody td:nth-child(2) { min-width: 160px; }
+        thead th {
+            background-color: #f1f5f9;
+            font-weight: 600;
+        }
+        tbody tr:nth-child(odd) { background-color: #fbfdff; }
+        tbody tr.row-green { background-color: rgba(16,185,129,0.12); }
+        tbody tr.row-yellow { background-color: rgba(245,158,11,0.16); }
+        tbody tr.row-red { background-color: rgba(239,68,68,0.14); }
+        tbody tr.row-hover { background-color: #e0f2fe; }
+        .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.5); display: none; align-items: center; justify-content: center; padding: 16px; }
+        .modal-overlay.show { display: flex; }
+        .modal { background: var(--surface); border-radius: 12px; width: 100%; max-width: 480px; box-shadow: 0 12px 36px rgba(15,23,42,0.2); padding: 20px; backdrop-filter: blur(2px); transform: scale(0.98); opacity: 0; transition: transform .18s ease, opacity .18s ease; }
+        .modal-overlay.show .modal { transform: scale(1); opacity: 1; }
+        .modal h2 { margin: 0 0 8px; font-size: 18px; }
+        .modal p { margin: 0 0 16px; }
+        .modal .close-btn { background-color: var(--primary); color: #fff; border: none; padding: 10px 16px; cursor: pointer; font-size: 16px; border-radius: 8px; }
+        .modal .close-btn:hover { background-color: var(--primary-hover); }
+        .actions { margin-top: 12px; }
+        .actions button {
+            background-color: var(--primary);
+            color: #fff;
+            border: none;
+            padding: 10px 16px;
+            cursor: pointer;
+            font-size: 16px;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(37,99,235,0.25);
+            transition: background-color .2s ease, transform .08s ease;
+        }
+        .actions button:hover { background-color: var(--primary-hover); }
+        .actions button:active { transform: translateY(1px); }
+        .actions button + button { margin-left: 8px; }
+        tbody tr { transition: background-color 0.6s ease; }
+        tbody tr.highlight-excellent { background-color: #c6f6d5; }
+        tbody td:nth-last-child(3), tbody td:nth-last-child(2) { text-align: center; font-weight: 600; background: #f8fafc; border-radius: 8px; }
+        tbody td:last-child { color: var(--muted); }
+        .search { margin-bottom: 12px; }
+        .search label { display: block; margin-bottom: 6px; }
+        .search input { width: 100%; padding: 10px 12px; box-sizing: border-box; font-size: 16px; border: 1px solid var(--border); border-radius: 8px; background: #f8fafc; }
+        .search input:focus { outline: none; border-color: var(--primary); box-shadow: 0 0 0 3px rgba(37,99,235,0.15); }
+        .sort-status { margin-top: 8px; font-style: italic; }
+        @media (min-width: 600px) {
+            nav ul {
+                flex-direction: row;
+            }
+            nav ul li a {
+                text-align: center;
+                border-bottom: 0;
+                padding: 14px 16px;
+            }
+            .actions { text-align: right; }
+        }
+    </style>
+</head>
+<body>
+    <nav>
+        <ul>
+            <li><a href="home.html">Home</a></li>
+            <li><a href="attendance.html">Attendance List</a></li>
+            <li><a href="add.html">Add Student</a></li>
+            <li><a href="reports.html">Reports</a></li>
+            <li><a href="#">Logout</a></li>
+        </ul>
+    </nav>
+    <div class="container">
+        <h1>Attendance</h1>
+        <div class="search">
+            <label for="searchName">Search by Name</label>
+            <input id="searchName" type="text" placeholder="Type a name">
+        </div>
+        <div class="table-responsive">
+        <table>
+            <thead>
+                <tr>
+                    <th rowspan="2">Last Name</th>
+                    <th rowspan="2">First Name</th>
+                    <th colspan="2">S1</th>
+                    <th colspan="2">S2</th>
+                    <th colspan="2">S3</th>
+                    <th colspan="2">S4</th>
+                    <th colspan="2">S5</th>
+                    <th colspan="2">S6</th>
+                    <th rowspan="2">Absences</th>
+                    <th rowspan="2">Participation</th>
+                    <th rowspan="2">Message</th>
+                </tr>
+                <tr>
+                    <th>P</th>
+                    <th>Pa</th>
+                    <th>P</th>
+                    <th>Pa</th>
+                    <th>P</th>
+                    <th>Pa</th>
+                    <th>P</th>
+                    <th>Pa</th>
+                    <th>P</th>
+                    <th>Pa</th>
+                    <th>P</th>
+                    <th>Pa</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>Ahmed</td>
+                    <td>Sara</td>
+                    <td><input type="checkbox"></td>
+                    <td><input type="checkbox" checked></td>
+                    <td><input type="checkbox" checked></td>
+                    <td><input type="checkbox"></td>
+                    <td><input type="checkbox"></td>
+                    <td><input type="checkbox" checked></td>
+                    <td><input type="checkbox"></td>
+                    <td><input type="checkbox"></td>
+                    <td><input type="checkbox"></td>
+                    <td><input type="checkbox"></td>
+                    <td><input type="checkbox"></td>
+                    <td><input type="checkbox"></td>
+                    <td>5 Abs</td>
+                    <td>1 Par</td>
+                    <td>Needs follow-up</td>
+                </tr>
+                <tr>
+                    <td>Yacine</td>
+                    <td>Ali</td>
+                    <td><input type="checkbox" checked></td>
+                    <td><input type="checkbox" checked></td>
+                    <td><input type="checkbox" checked></td>
+                    <td><input type="checkbox"></td>
+                    <td><input type="checkbox" checked></td>
+                    <td><input type="checkbox" checked></td>
+                    <td><input type="checkbox" checked></td>
+                    <td><input type="checkbox" checked></td>
+                    <td><input type="checkbox" checked></td>
+                    <td><input type="checkbox" checked></td>
+                    <td><input type="checkbox" checked></td>
+                    <td><input type="checkbox"></td>
+                    <td>1 Abs</td>
+                    <td>4 Par</td>
+                    <td>Good participation</td>
+                </tr>
+                <tr>
+                    <td>Houcine</td>
+                    <td>Rania</td>
+                    <td><input type="checkbox"></td>
+                    <td><input type="checkbox" checked></td>
+                    <td><input type="checkbox"></td>
+                    <td><input type="checkbox"></td>
+                    <td><input type="checkbox" checked></td>
+                    <td><input type="checkbox"></td>
+                    <td><input type="checkbox" checked></td>
+                    <td><input type="checkbox"></td>
+                    <td><input type="checkbox"></td>
+                    <td><input type="checkbox"></td>
+                    <td><input type="checkbox"></td>
+                    <td><input type="checkbox" checked></td>
+                    <td>4 Abs</td>
+                    <td>2 Par</td>
+                    <td>Improve consistency</td>
+                </tr>
+            </tbody>
+        </table>
+        </div>
+        <p id="sortStatus" class="sort-status"></p>
+        <p>Each row of the table should contain the information of one student.</p>
+        <div class="actions">
+            <button id="show-report-btn" type="button">Show Report</button>
+            <button id="highlight-btn" type="button">Highlight Excellent Students</button>
+            <button id="reset-colors-btn" type="button">Reset Colors</button>
+            <button id="sort-abs-btn" type="button">Sort by Absences (Ascending)</button>
+            <button id="sort-par-btn" type="button">Sort by Participation (Descending)</button>
+        </div>
+    </div>
+    <div id="modalOverlay" class="modal-overlay">
+        <div class="modal">
+            <h2 id="modalTitle"></h2>
+            <p id="modalBody"></p>
+            <button id="modalClose" class="close-btn" type="button">Close</button>
+        </div>
+    </div>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script>
+        function updateRow(row) {
+            const boxes = Array.from(row.querySelectorAll('input[type="checkbox"]'));
+            const totalSessions = 6;
+            let presentCount = 0;
+            let participationCount = 0;
+            boxes.forEach((box, i) => {
+                if (i % 2 === 0) { if (box.checked) presentCount++; } else { if (box.checked) participationCount++; }
+            });
+            const absences = totalSessions - presentCount;
+            const cells = row.querySelectorAll('td');
+            const absCell = cells[cells.length - 3];
+            const parCell = cells[cells.length - 2];
+            const msgCell = cells[cells.length - 1];
+            absCell.textContent = absences + ' Abs';
+            parCell.textContent = participationCount + ' Par';
+            let message = '';
+            if (absences >= 5) {
+                message = 'Excluded – too many absences – You need to participate more';
+            } else if (absences >= 3) {
+                if (participationCount < 3) {
+                    message = 'Warning – attendance low – You need to participate more';
+                } else {
+                    message = 'Warning – attendance low';
+                }
+            } else {
+                if (participationCount >= 4) {
+                    message = 'Good attendance – Excellent participation';
+                } else {
+                    message = 'Good attendance – You need to participate more';
+                }
+            }
+            msgCell.textContent = message;
+            row.classList.remove('row-green','row-yellow','row-red');
+            if (absences >= 5) row.classList.add('row-red');
+            else if (absences >= 3) row.classList.add('row-yellow');
+            else row.classList.add('row-green');
+        }
+        function attachRow(row) {
+            row.querySelectorAll('input[type="checkbox"]').forEach(box => {
+                box.addEventListener('change', () => {
+                    updateRow(row);
+                    const idx = row.getAttribute('data-index');
+                    if (idx !== null) {
+                        const students = JSON.parse(localStorage.getItem('students') || '[]');
+                        const start = 2;
+                        for (let s = 0; s < 6; s++) {
+                            const pBox = row.querySelectorAll('input[type="checkbox"]')[s*2];
+                            const paBox = row.querySelectorAll('input[type="checkbox"]')[s*2+1];
+                            if (students[idx]) {
+                                if (!students[idx].sessions) students[idx].sessions = Array.from({length:6},()=>({p:false, pa:false}));
+                                students[idx].sessions[s].p = pBox.checked;
+                                students[idx].sessions[s].pa = paBox.checked;
+                            }
+                        }
+                        localStorage.setItem('students', JSON.stringify(students));
+                    }
+                });
+            });
+            updateRow(row);
+        }
+        document.querySelectorAll('tbody tr').forEach(attachRow);
+        function createStudentRow(student, index) {
+            const tr = document.createElement('tr');
+            tr.setAttribute('data-index', index);
+            const ln = document.createElement('td'); ln.textContent = student.lastName || '';
+            const fn = document.createElement('td'); fn.textContent = student.firstName || '';
+            tr.appendChild(ln); tr.appendChild(fn);
+            for (let i = 0; i < 6; i++) {
+                const p = document.createElement('td');
+                const pBox = document.createElement('input'); pBox.type = 'checkbox';
+                const pa = document.createElement('td');
+                const paBox = document.createElement('input'); paBox.type = 'checkbox';
+                const s = student.sessions && student.sessions[i] ? student.sessions[i] : { p:false, pa:false };
+                pBox.checked = !!s.p; paBox.checked = !!s.pa;
+                p.appendChild(pBox); pa.appendChild(paBox);
+                tr.appendChild(p); tr.appendChild(pa);
+            }
+            const abs = document.createElement('td');
+            const par = document.createElement('td');
+            const msg = document.createElement('td');
+            tr.appendChild(abs); tr.appendChild(par); tr.appendChild(msg);
+            return tr;
+        }
+        const stored = JSON.parse(localStorage.getItem('students') || '[]');
+        const tbody = document.querySelector('tbody');
+        stored.forEach((st, i) => {
+            const row = createStudentRow(st, i);
+            tbody.appendChild(row);
+            attachRow(row);
+        });
+        let renderedCount = document.querySelectorAll('tbody tr[data-index]').length;
+        window.addEventListener('storage', (e) => {
+            if (e.key === 'students') {
+                const list = JSON.parse(e.newValue || '[]');
+                for (let i = renderedCount; i < list.length; i++) {
+                    const row = createStudentRow(list[i], i);
+                    tbody.appendChild(row);
+                    attachRow(row);
+                }
+                renderedCount = list.length;
+            }
+        });
+        function computeReportSummary() {
+            const rows = Array.from(document.querySelectorAll('tbody tr'));
+            const totalStudents = rows.length;
+            let present = 0, participated = 0;
+            rows.forEach(row => {
+                const boxes = row.querySelectorAll('input[type="checkbox"]');
+                boxes.forEach((b, i) => {
+                    if (i % 2 === 0 && b.checked) present++;
+                    if (i % 2 === 1 && b.checked) participated++;
+                });
+            });
+            const summary = { totalStudents, present, participated, ts: Date.now() };
+            localStorage.setItem('report_summary', JSON.stringify(summary));
+        }
+        document.getElementById('show-report-btn').addEventListener('click', () => {
+            computeReportSummary();
+            location.href = 'reports.html';
+        });
+        $(function(){
+            $('tbody').on('mouseenter','tr',function(){
+                $(this).addClass('row-hover');
+            });
+            $('tbody').on('mouseleave','tr',function(){
+                $(this).removeClass('row-hover');
+            });
+            const modalOverlay = $('#modalOverlay');
+            const modalTitle = $('#modalTitle');
+            const modalBody = $('#modalBody');
+            function openModal(title, body) {
+                modalTitle.text(title);
+                modalBody.text(body);
+                modalOverlay.addClass('show');
+            }
+            function closeModal() { modalOverlay.removeClass('show'); }
+            $('#modalClose').on('click', closeModal);
+            modalOverlay.on('click', function(e){ if (e.target === this) closeModal(); });
+            $(document).on('keydown', function(e){ if (e.key === 'Escape') closeModal(); });
+            $('tbody').on('click','input[type="checkbox"]',function(e){ e.stopPropagation(); });
+            $('tbody').on('click','tr',function(e){
+                if ($(e.target).is('input[type="checkbox"]')) return;
+                const cells = $(this).children('td');
+                const ln = $(cells[0]).text().trim();
+                const fn = $(cells[1]).text().trim();
+                const boxes = $(this).find('input[type="checkbox"]');
+                let present = 0; boxes.each(function(i){ if (i % 2 === 0 && this.checked) present++; });
+                const abs = 6 - present;
+                openModal(ln + ' ' + fn, 'Absences: ' + abs);
+            });
+            $('#highlight-btn').on('click', function(){
+                $('tbody tr').each(function(){
+                    const cells = $(this).children('td');
+                    const absText = $(cells[cells.length-3]).text().trim();
+                    const abs = parseInt(absText, 10) || 0;
+                    if (abs < 3) {
+                        $(this).stop(true,true).addClass('highlight-excellent')
+                            .fadeOut(120).fadeIn(120).fadeOut(120).fadeIn(120);
+                    }
+                });
+            });
+            $('#reset-colors-btn').on('click', function(){
+                $('tbody tr').removeClass('highlight-excellent');
+            });
+            function applyFilter(){
+                const q = $('#searchName').val().trim().toLowerCase();
+                const rows = $('tbody tr');
+                if (!q) { rows.show(); return; }
+                const matched = rows.filter(function(){
+                    const tds = $(this).children('td');
+                    const ln = $(tds[0]).text().toLowerCase();
+                    const fn = $(tds[1]).text().toLowerCase();
+                    return ln.includes(q) || fn.includes(q);
+                });
+                rows.hide();
+                matched.show();
+            }
+            $('#searchName').on('input', applyFilter);
+            const originalAppend = tbody.appendChild.bind(tbody);
+            tbody.appendChild = function(node){ originalAppend(node); applyFilter(); };
+            function updateSortStatus(text){ $('#sortStatus').text(text); }
+            $('#sort-abs-btn').on('click', function(){
+                const rows = $('tbody tr').get();
+                rows.sort(function(a,b){
+                    const ca = a.children; const cb = b.children;
+                    const absA = parseInt(ca[ca.length-3].textContent, 10) || 0;
+                    const absB = parseInt(cb[cb.length-3].textContent, 10) || 0;
+                    return absA - absB;
+                });
+                $('tbody').append(rows);
+                updateSortStatus('Currently sorted by absences (ascending)');
+                applyFilter();
+            });
+            $('#sort-par-btn').on('click', function(){
+                const rows = $('tbody tr').get();
+                rows.sort(function(a,b){
+                    const ca = a.children; const cb = b.children;
+                    const parA = parseInt(ca[ca.length-2].textContent, 10) || 0;
+                    const parB = parseInt(cb[cb.length-2].textContent, 10) || 0;
+                    return parB - parA;
+                });
+                $('tbody').append(rows);
+                updateSortStatus('Currently sorted by participation (descending)');
+                applyFilter();
+            });
+        });
+    </script>
+</body>
+</html>
